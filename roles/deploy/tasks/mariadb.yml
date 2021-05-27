@@ -1,0 +1,55 @@
+---
+- name: install mariadb client and data
+  block: 
+    - name: transfer sql data files
+      copy:
+        src: "{{ item }}"
+        dest: /tmp 
+      loop:
+        - "001-create-schema.sql"
+        - "002-create-admin-user.sql"
+    - name: install pymysql & mariadb-client
+      apt:
+        name:
+          - python3-pymysql
+          - mysql-client
+        state: present
+        update_cache: true
+    - name: create cpx database and create initial guacadmin user
+      community.mysql.mysql_db:
+        name: "{{ db_dbname }}"
+        state: import
+        login_host: "{{ db_endpoint }}"
+        login_user: "{{ db_username }}"
+        login_password: "{{ db_password }}"
+        target: "{{ item }}"
+      loop: 
+        - "/tmp/001-create-schema.sql"
+        - "/tmp/002-create-admin-user.sql"
+      become: false
+  run_once: true
+
+    #- name: install pymysql & mariadb-client
+    #  apt:
+    #    name:
+    #      - python3-pymysql
+    #      - mariadb-client
+    #    state: present
+    #    update_cache: true
+    #  delegate_to: 127.0.0.1
+    #  run_once: true
+    #
+    #- name: create cpx database and create initial guacadmin user
+    #  community.mysql.mysql_db:
+    #    name: "{{ db_dbname }}"
+    #    state: import
+    #    login_host: "{{ db_endpoint }}"
+    #    login_user: "{{ db_username }}"
+    #    login_password: "{{ db_password }}"
+    #    target: "{{ item }}"
+    #  loop: 
+    #    - "{{ lookup('env', 'PWD') }}/roles/deploy/files/001-create-schema.sql"
+    #    - "{{ lookup('env', 'PWD') }}/roles/deploy/files/002-create-admin-user.sql"
+    #  delegate_to: 127.0.0.1
+    #  run_once: true
+    #  become: false

@@ -62,7 +62,6 @@
     - { src: 'mariadb-java-client-latest.jar', dest: '/etc/guacamole/lib/' }
     - { src: 'guacamole-auth-ldap-latest.jar', dest: '/etc/guacamole/extensions/' }
     - { src: 'guacamole-latest.war', dest: '/var/lib/tomcat9/webapps/guacamole.war' }
-    - { src: 'branding-latest.jar', dest: '/etc/guacamole/extensions/' }
     - { src: 'mysql-connector-java-8.0.23.jar', dest: '/etc/guacamole/lib/' }
   loop_control:
     loop_var: guacamole_ext

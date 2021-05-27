@@ -25,5 +25,18 @@
     mode: 0644
   notify: restart nginx
 
+    #- name: transfer nginx certs
+    #  copy:
+    #    src: "{{ certs }}" 
+    #    dest: /etc/ssl/
+    #    owner: root
+    #    group: root
+    #    mode: 0600
+    #  loop:
+    #    - nginx-cert
+    #    - nginx-private
+    #  loop_control:
+    #    loop_var: certs
+
 - name: force nginx restart only if config has changed 
   meta: flush_handlers

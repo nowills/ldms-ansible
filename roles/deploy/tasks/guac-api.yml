@@ -35,6 +35,8 @@
     validate_certs: no
   become: false
   register: result
-  failed_when: ( result.status not in [ 200, 400 ] )
   delegate_to: 127.0.0.1
   run_once: true
+
+
+

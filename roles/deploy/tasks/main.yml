@@ -1,21 +1,10 @@
 ---
 - name: import schema and create admin user
-  include: public-cloud/mariadb.yml
-  when: public_cloud is defined
-
-- name: import schema and create admin user
-  include: private-cloud/mariadb.yml
-  when: private_cloud is defined
-
-- name: install and configure squid proxy
-  include: squid.yml
+  include: mariadb.yml
+  when: build_db is defined
 
 - name: install and configure nginx for guacamole
   include: nginx.yml
-
-- name: install and confiure keepalived
-  include: private-cloud/keepalived.yml
-  when: private_cloud is defined
 
 - name: build guacamole server from source
   include: guacamole-server.yml
@@ -26,6 +15,3 @@
 - name: create initial groups via guac api
   include: guac-api.yml
 
-- name: install and configure encrypted rsyslog relay
-  include: rsyslog.yml
-  when: install_rsyslog is defined 

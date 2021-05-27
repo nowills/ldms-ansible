@@ -1,7 +1,0 @@
----
-- hosts: all
-  gather_facts: true
-  roles:
-    - { role: hardening, when: harden is defined }
-    - deploy
-    - { role: agents, when: agent_install is defined } 
