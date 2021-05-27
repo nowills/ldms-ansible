@@ -1,0 +1,30 @@
+---
+- name: install keepalived
+  apt:
+    name: keepalived
+    state: present
+    update_cache: yes
+
+- name: enable non local bind for keepalived
+  sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    value: "1"
+    sysctl_set: yes
+    state: present
+    sysctl_file: /etc/sysctl.d/99-keepalived.conf
+    reload: yes
+
+- name: copy check script and keepalived config
+  template:
+    src: "{{ file.src }}"
+    dest: "{{ file.dest }}"
+    owner: root
+    group: root
+    mode: "{{ file.mode }}"
+  loop: 
+    - { src: 'vrrp_chk.j2', dest: '/root/vrrp_chk.sh', mode: '0700' }
+    - { src: 'keepalived.j2', dest: '/etc/keepalived/keepalived.conf', mode: '0644' }
+  loop_control: 
+    loop_var: file
+  notify: restart keepalived
+

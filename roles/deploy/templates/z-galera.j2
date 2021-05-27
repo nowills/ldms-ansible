@@ -1,0 +1,30 @@
+[mariadb]
+binlog_format=ROW
+default-storage-engine=innodb
+innodb_autoinc_lock_mode=2
+innodb_doublewrite=1
+bind-address=0.0.0.0
+innodb_flush_log_at_trx_commit=0
+
+# Galera Provider Configuration
+wsrep_on=ON
+wsrep_provider=/usr/lib/galera/libgalera_smm.so
+
+# Galera Cluster Configuration
+wsrep_cluster_address=gcomm://{{ hostvars[groups['enpx01'][0]]['ansible_default_ipv4']['address'] }},{{ hostvars[groups['enpx02'][0]]['ansible_default_ipv4']['address'] }}
+wsrep_cluster_name=cpx000_cluster
+
+# Galera Synchronization Configuration
+wsrep_sst_method=rsync
+wsrep_sst_auth=wsrep_sst_user:{{ sst_password }}
+
+# Galera Node Configuration
+{% if 'enpx01' in group_names %}
+wsrep_node_address={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+wsrep_node_name={{ hostvars[inventory_hostname]['ansible_hostname'] }}
+{% endif %}
+{% if 'enpx02' in group_names %}
+wsrep_node_address={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+wsrep_node_name={{ hostvars[inventory_hostname]['ansible_hostname'] }}
+wsrep_provider_options=pc.bootstrap=YES
+{% endif %}

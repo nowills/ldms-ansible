@@ -1,0 +1,16 @@
+all:
+  children:
+    proxies:
+      children:
+        enpx01:
+          hosts:
+            vmcpx001:
+        enpx02:
+          hosts:
+            vmcpx002:
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+        nginx_server_name: 'vmcpxweb.asme.cloud'
+        squid_localnet: '172.28.128.0/24'
+        virt_ip: '172.28.128.100'
+        db_endpoint: localhost

@@ -1,0 +1,32 @@
+---
+- name: install required rsyslog packages
+  apt: 
+    name: 
+      - rsyslog
+      - rsyslog-gnutls
+    state: present
+    update_cache: yes
+
+- name: ensure ryslog is running
+  systemd:
+    name: rsyslog
+    state: started
+    enabled: yes
+
+- name: transfer TLS certs for encryption
+  copy:
+    src: rsyslog-ca
+    dest: /etc/ssl/rsyslog-ca
+    owner: root
+    group: root
+    mode: 0600
+
+- name: template out rsyslog relay file
+  template:
+    src: relay.conf.j2
+    dest: /etc/rsyslog.d/relay.conf
+    owner: root
+    group: root
+    mode: 0640
+  notify: restart rsyslog
+

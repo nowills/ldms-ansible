@@ -1,0 +1,86 @@
+---
+- name: start tomcat
+  systemd: 
+    name: tomcat9
+    state: started
+    enabled: true
+
+- name: Create guacamole_home directory 
+  file: 
+    path: "{{ guacamole_file_structure }}"
+    state: directory
+    owner: root
+    group: tomcat
+  loop: 
+    - /etc/guacamole
+    - /etc/guacamole/extensions
+    - /etc/guacamole/lib
+  loop_control:
+    loop_var: guacamole_file_structure
+
+- name: Add GUACAMOLE_HOME var to tomcat
+  lineinfile:
+    path: /etc/default/tomcat9
+    regex: '^GUACAMOLE_HOME='
+    line: 'GUACAMOLE_HOME=/etc/guacamole/'
+    state: present
+
+- name: deploy guacamole_properties
+  template:
+    src: guacamole_properties.j2 
+    dest: /etc/guacamole/guacamole.properties
+    mode: 0660
+    owner: root
+    group: tomcat
+  notify: restart tomcat9
+
+- name: create hidden dir
+  file:
+    path: /usr/share/tomcat9/.guacamole
+    state: directory
+    owner: root
+    group: tomcat
+    mode: 0770
+
+- name: symlink guacamole_properites
+  file:  
+    src: /etc/guacamole/guacamole.properties
+    dest: /usr/share/tomcat9/.guacamole/guacamole.properties
+    state: link
+    owner: root
+    group: tomcat
+
+- name: deploy guacamole-client
+  copy:
+    src: "{{ guacamole_ext.src }}" 
+    dest: "{{ guacamole_ext.dest }}"
+    owner: root
+    group: tomcat
+    mode: 0660
+  loop:
+    - { src: 'guacamole-auth-jdbc-mysql-latest.jar', dest: '/etc/guacamole/extensions/' }
+    - { src: 'mariadb-java-client-latest.jar', dest: '/etc/guacamole/lib/' }
+    - { src: 'guacamole-auth-ldap-latest.jar', dest: '/etc/guacamole/extensions/' }
+    - { src: 'guacamole-latest.war', dest: '/var/lib/tomcat9/webapps/guacamole.war' }
+    - { src: 'branding-latest.jar', dest: '/etc/guacamole/extensions/' }
+    - { src: 'mysql-connector-java-8.0.23.jar', dest: '/etc/guacamole/lib/' }
+  loop_control:
+    loop_var: guacamole_ext
+
+- name: add remote IP valve to server.xml - debian family
+  template:
+    src: tomcat9_server_xml.j2
+    dest: /etc/tomcat9/server.xml
+    owner: root
+    group: tomcat
+    mode: 0664
+  notify: restart tomcat9
+
+- name: force tomcat restart if config has changed
+  meta: flush_handlers
+
+- name: wait for tomcat to load guacamole
+  wait_for:
+    port: 8080
+    state: started
+    timeout: 60 
